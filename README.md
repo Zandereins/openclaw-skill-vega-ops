@@ -1,79 +1,151 @@
-# vega-ops 🛰️
+# 🛰️ Vega Ops
 
-An [OpenClaw](https://openclaw.ai) skill for server operations, shell execution, and deployment workflows.
+**Server operations, shell execution, and deployment workflows for OpenClaw agents.**
 
-Built for **Vega**, an AI assistant running on a hardened Hetzner VPS with Docker, Tailscale mesh VPN, and Claude Code integration.
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![OpenClaw Skill](https://img.shields.io/badge/OpenClaw-Skill-FF6B35)](https://openclaw.ai)
 
-## What it does
+## Why Vega Ops?
 
-`vega-ops` gives an OpenClaw agent the operational knowledge to safely manage a Linux VPS:
+Running an OpenClaw agent on a production VPS requires operational knowledge beyond general coding skills. Path confusion (host vs container), unsafe shell execution, and deployment mishaps are common failure modes.
 
-- **Shell execution** with a 3-tier safety model (free / approval-required / forbidden)
-- **Docker container management** (lifecycle, logs, exec, updates)
-- **Host ↔ Container path mapping** (avoids the #1 source of bugs in containerized setups)
-- **Claude Code delegation** (sync and async patterns with PTY handling)
-- **Git & GitHub workflows** (workspace backup, skill repos, safe push patterns)
-- **Security checks** (Tailscale, UFW, SSH hardening, OpenClaw audit)
-- **Troubleshooting playbook** (known issues with proven fixes)
+Vega Ops provides battle-tested operational patterns:
 
-## Design principles
+- **3-tier safety model** for shell execution (free / approval / forbidden)
+- **Path mapping** between host and container contexts
+- **Claude Code delegation** patterns (sync/async, PTY handling)
+- **Security checks** for Tailscale, UFW, SSH hardening
+- **Troubleshooting playbook** with proven fixes
 
-Inspired by [OpenAI's Shell + Skills tips](https://platform.openai.com/docs/guides/skills-shell-tips) and adapted for the OpenClaw ecosystem:
+## Architecture
 
-1. **Skill descriptions are routing logic** — clear "use when / don't use when" boundaries
-2. **Negative examples reduce misfires** — explicit "don't do this" cases
-3. **Templates inside the skill** — zero token cost when not invoked
-4. **Security by default** — containment-first approach for shell + network access
-5. **Path mapping is a first-class concern** — host vs. container paths documented exhaustively
+```
+┌─────────────────────────────────────────┐
+│ Layer 1: SKILL.md (Agent Awareness)     │
+│ ~300 tokens, always loaded              │
+│ • Environment overview (paths, users)   │
+│ • Shell execution safety rules          │
+│ • Docker operation templates            │
+│ • Claude Code delegation patterns       │
+│ • Git/GitHub workflow checklists        │
+├─────────────────────────────────────────┤
+│ Layer 2: Reference Docs (On-Demand)     │
+│ 0 tokens, loaded only when needed       │
+│ • path-mapping.md — Host ↔ Container    │
+│ • security-checklist.md — Quick audit   │
+└─────────────────────────────────────────┘
+```
 
 ## Installation
 
-### As a workspace skill (recommended)
+Copy the skill folder into your OpenClaw workspace:
 
 ```bash
-# Copy to your OpenClaw workspace
 cp -r vega-ops/ ~/.openclaw/workspace/skills/vega-ops/
+```
 
-# Restart gateway to pick up the skill
+The SKILL.md is automatically discovered and loaded by OpenClaw.
+
+Restart the gateway to activate:
+```bash
 cd ~/openclaw && docker compose restart openclaw-gateway
-
-# Verify
-docker compose exec openclaw-gateway npx openclaw skills list
 ```
 
-### Customization
-
-This skill is tailored for a specific setup (Hetzner CX32, Ubuntu 24.04, Tailscale, Docker).
-To adapt it for your environment:
-
-1. Update paths in `SKILL.md` section 1 and `references/path-mapping.md`
-2. Adjust the 3-tier control model in section 2 to match your approval workflow
-3. Modify security checks in section 6 for your network topology
-4. Update troubleshooting entries with your own known issues
-
-## Structure
-
+Verify:
+```bash
+docker compose exec openclaw-gateway npx openclaw skills list | grep vega-ops
 ```
-vega-ops/
-├── SKILL.md                          # Main skill (loaded by OpenClaw)
-├── references/
-│   ├── path-mapping.md               # Host ↔ Container path translation table
-│   └── security-checklist.md         # Quick security verification steps
-├── LICENSE
-└── README.md
+
+## Usage
+
+### Passive Awareness (automatic)
+
+Once installed, the SKILL.md rules are active in every conversation. Your agent will:
+- Execute shell commands with safety guardrails (ask before destructive ops)
+- Distinguish host paths from container paths
+- Follow security best practices for server operations
+
+### Quick Health Check
+
+Ask your agent:
 ```
+Run a health check on the VPS
+```
+
+Your agent will execute:
+```bash
+uptime && df -h / && free -h
+tailscale status
+sudo ufw status verbose
+cd ~/openclaw && docker compose ps
+```
+
+### Claude Code Delegation
+
+Ask your agent:
+```
+Delegate to Claude Code: Review AGENTS.md and suggest improvements
+```
+
+Your agent will use the synchronous delegation pattern from SKILL.md.
+
+### Git Backup
+
+Ask your agent:
+```
+Backup the workspace to GitHub
+```
+
+Your agent will follow the safe push workflow with diff preview.
+
+## Token Efficiency
+
+| Component | Token Cost | When Loaded |
+|-----------|-----------|-------------|
+| SKILL.md | ~300 tokens | Every message |
+| path-mapping.md | 0 tokens | On-demand only |
+| security-checklist.md | 0 tokens | On-demand only |
+
+## Customization
+
+This skill is tailored for a specific setup:
+- **OS:** Ubuntu 24.04 LTS
+- **VPN:** Tailscale mesh network
+- **Container:** Docker (OpenClaw Gateway)
+- **Delegation:** Claude Code
+
+To adapt for your environment:
+
+1. Edit `SKILL.md` section 1 (Environment Overview) with your paths
+2. Update `references/path-mapping.md` with your volume mounts
+3. Adjust the 3-tier control model for your approval workflow
+4. Customize security checks for your network topology
 
 ## Requirements
 
 - OpenClaw Gateway (Docker)
-- Tailscale mesh VPN
-- Ubuntu 24.04 (or compatible Linux)
+- Linux VPS (Ubuntu/Debian recommended)
+- Tailscale (optional, but recommended for security)
 - Claude Code (optional, for delegation features)
+
+## Roadmap
+
+- [x] **v1.0** — Initial release (shell safety, Docker ops, path mapping)
+- [ ] **v1.1** — Automated health check skill (cron integration)
+- [ ] **v1.2** — Interactive troubleshooting mode (guided diagnostics)
+- [ ] **v1.3** — Multi-server support (workspace sync across nodes)
+
+## Contributing
+
+Contributions welcome! Areas of interest:
+- Additional troubleshooting playbook entries
+- Security check automations
+- Platform-specific adaptations (Arch, Fedora, macOS)
 
 ## License
 
-MIT
+MIT — see [LICENSE](LICENSE)
 
-## Author
+---
 
-Franz & Vega — Built in Dresden 🇩🇪
+*Built by [zaneins](https://github.com/Zandereins) — operational excellence for AI agents, one command at a time.* 🛰️
