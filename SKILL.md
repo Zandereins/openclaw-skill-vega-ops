@@ -41,7 +41,7 @@ Git workflows, and troubleshooting.
 ## 1. Environment Overview
 
 ```
-Host: OpenClaw-Agentic-Coding-Server (Hetzner CX32, Nürnberg)
+Host: your-server-hostname (Hetzner CX32, or your VPS provider)
 OS:   Ubuntu 24.04 LTS
 User: openclaw (UID 1000) — never run as root unless explicitly required
 VPN:  Tailscale 100.x.x.x (only access path)
