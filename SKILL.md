@@ -8,6 +8,10 @@ description: >
   Do NOT use for general knowledge questions, creative writing, or tasks unrelated
   to server infrastructure. Do NOT use for Telegram bot configuration (that lives
   in AGENTS.md and openclaw.json).
+emoji: 🛰️
+metadata:
+  openclaw:
+    triggers: [server, docker, vps, deployment, shell, exec, delegate, claude, git, github, security, firewall, ssh, tailscale, container, logs, health, diagnostic, troubleshoot, workflow]
 ---
 
 # Vega Ops
